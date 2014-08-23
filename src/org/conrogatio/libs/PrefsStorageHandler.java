@@ -84,6 +84,6 @@ public class PrefsStorageHandler {
 
 	// Update local
 	public void update() {
-		prefs = c.getSharedPreferences(location, Context.MODE_PRIVATE);
+		prefs = c.getSharedPreferences(location, c.MODE_PRIVATE);
 	}
 }
