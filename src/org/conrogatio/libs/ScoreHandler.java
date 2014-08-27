@@ -86,7 +86,7 @@ public class ScoreHandler {
 
 	/**
 	 * 
-	 * @return An String[] of all the stored names. The highest score will be in
+	 * @return A String[] of all the stored names sorted by score. The highest score will be in
 	 *         String[0]
 	 */
 	public String[] getNameList() {
@@ -95,7 +95,7 @@ public class ScoreHandler {
 
 	/**
 	 * 
-	 * @return An int[] of all the stored scores. The highest score will be in
+	 * @return A sorted int[] of all the stored scores. The highest score will be in
 	 *         int[0]
 	 */
 	public int[] getScoreList() {
