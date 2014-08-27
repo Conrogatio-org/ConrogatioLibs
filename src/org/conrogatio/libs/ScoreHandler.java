@@ -15,6 +15,17 @@ public class ScoreHandler {
 	private static final String KEY_LATEST_PLACE = "latestPlace";
 	private static PrefsStorageHandler scorePSH;
 
+	/**
+	 * 
+	 * @param scoreListLength
+	 *            The number of score entries you want to be stored on the high
+	 *            score list
+	 * @param storageLocation
+	 *            The location to store the scores on. Default is
+	 *            com.example.appname.prefs.scores
+	 * @param context
+	 *            Your current context
+	 */
 	public ScoreHandler(int scoreListLength, String storageLocation, Context context) {
 		names = new String[scoreListLength];
 		scores = new int[scoreListLength];
@@ -36,6 +47,13 @@ public class ScoreHandler {
 		}
 	}
 
+	/**
+	 * 
+	 * @param name
+	 *            The player name to assign the score to
+	 * @param score
+	 *            The score achieved
+	 */
 	public void addScore(String name, int score) {
 		// Adds latest playername and score to lastName and lastScore
 		latestName = name;
@@ -63,24 +81,48 @@ public class ScoreHandler {
 			latestPlace = 0;
 		}
 		writeScores();
+		getScores();
 	}
 
+	/**
+	 * 
+	 * @return An String[] of all the stored names. The highest score will be in
+	 *         String[0]
+	 */
 	public String[] getNameList() {
 		return names;
 	}
 
+	/**
+	 * 
+	 * @return An int[] of all the stored scores. The highest score will be in
+	 *         int[0]
+	 */
 	public int[] getScoreList() {
 		return scores;
 	}
 
+	/**
+	 * 
+	 * @return String with the last used name
+	 */
 	public String getLatestName() {
 		return latestName;
 	}
 
+	/**
+	 * 
+	 * @return int with the last achieved score
+	 */
 	public int getLatestScore() {
 		return latestScore;
 	}
 
+	/**
+	 * 
+	 * @return int with the last achieved place in the high score list. If not
+	 *         ranked, returned value is 0
+	 */
 	public int getLatestPlace() {
 		return latestPlace;
 	}
@@ -95,6 +137,9 @@ public class ScoreHandler {
 		scorePSH.put(KEY_LATEST_PLACE, latestPlace);
 	}
 
+	/**
+	 * Use to remove all the stored scores
+	 */
 	public void resetScores() {
 		for (int i = 0; i < names.length; i++) {
 			names[i] = "none";
