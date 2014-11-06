@@ -26,7 +26,8 @@ public class ScoreHandler {
 	 * @param context
 	 *            Your current context
 	 */
-	public ScoreHandler(int scoreListLength, String storageLocation, Context context) {
+	public ScoreHandler(int scoreListLength, String storageLocation,
+			Context context) {
 		names = new String[scoreListLength];
 		scores = new int[scoreListLength];
 		for (int i = 0; i < names.length; i++) {
@@ -42,8 +43,10 @@ public class ScoreHandler {
 		scorePSH.fetch(KEY_LATEST_SCORE, 0);
 		scorePSH.fetch(KEY_LATEST_PLACE, 0);
 		for (int i = 0; i < names.length; i++) {
-			names[i] = scorePSH.fetch(KEY_NAMES + Integer.toString(i), names[i]);
-			scores[i] = scorePSH.fetch(KEY_SCORES + Integer.toString(i), scores[i]);
+			names[i] = scorePSH
+					.fetch(KEY_NAMES + Integer.toString(i), names[i]);
+			scores[i] = scorePSH.fetch(KEY_SCORES + Integer.toString(i),
+					scores[i]);
 		}
 	}
 
@@ -86,8 +89,8 @@ public class ScoreHandler {
 
 	/**
 	 * 
-	 * @return A String[] of all the stored names sorted by score. The highest score will be in
-	 *         String[0]
+	 * @return A String[] of all the stored names sorted by score. The highest
+	 *         score will be in String[0]
 	 */
 	public String[] getNameList() {
 		return names;
@@ -95,8 +98,8 @@ public class ScoreHandler {
 
 	/**
 	 * 
-	 * @return A sorted int[] of all the stored scores. The highest score will be in
-	 *         int[0]
+	 * @return A sorted int[] of all the stored scores. The highest score will
+	 *         be in int[0]
 	 */
 	public int[] getScoreList() {
 		return scores;

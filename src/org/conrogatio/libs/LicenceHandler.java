@@ -22,7 +22,8 @@ public class LicenceHandler {
 		public void allow(int reason) {
 			licence = reason;
 			licensed = true;
-			Toast.makeText(c, "Your licence is valid", Toast.LENGTH_SHORT).show();
+			Toast.makeText(c, "Your licence is valid", Toast.LENGTH_SHORT)
+					.show();
 		}
 
 		@Override
@@ -37,7 +38,8 @@ public class LicenceHandler {
 		public void dontAllow(int reason) {
 			licence = reason;
 			licensed = false;
-			Toast.makeText(c, "Your licence is not valid", Toast.LENGTH_SHORT).show();
+			Toast.makeText(c, "Your licence is not valid", Toast.LENGTH_SHORT)
+					.show();
 			Log.i("License", "Reason for denial: " + reason);
 			// showDialog(0);
 		}
@@ -53,38 +55,54 @@ public class LicenceHandler {
 
 	public LicenceHandler(String BASE64_PUBLIC_KEY, byte[] SALT, Context context) {
 		c = context;
-		String deviceId = Secure.getString(c.getContentResolver(), Secure.ANDROID_ID);
+		String deviceId = Secure.getString(c.getContentResolver(),
+				Secure.ANDROID_ID);
 		mHandler = new Handler();
 		mLicenseCheckerCallback = new MyLicenseCheckerCallback();
-		mChecker = new LicenseChecker(c, new ServerManagedPolicy(c, new AESObfuscator(SALT, c.getPackageName(),
-				deviceId)), BASE64_PUBLIC_KEY);
+		mChecker = new LicenseChecker(c, new ServerManagedPolicy(c,
+				new AESObfuscator(SALT, c.getPackageName(), deviceId)),
+				BASE64_PUBLIC_KEY);
 		startCheck();
 	}
 
 	public AlertDialog getDialog(int id) {
-		return new AlertDialog.Builder(c).setTitle("Application not licensed")
-				.setMessage("This application is not licensed, please install it from the Play Store to use it.")
-				.setPositiveButton("Play Store listing", new DialogInterface.OnClickListener() {
+		return new AlertDialog.Builder(c)
+				.setTitle("Application not licensed")
+				.setMessage(
+						"This application is not licensed, please install it from the Play Store to use it.")
+				.setPositiveButton("Play Store listing",
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								Intent marketIntent = new Intent(
+										Intent.ACTION_VIEW,
+										Uri.parse("https://play.google.com/store/apps/details?id="
+												+ c.getPackageName()));
+								c.startActivity(marketIntent);
+								// c.finish();
+							}
+						})
+				.setNegativeButton("Exit",
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								// finish();
+							}
+						})
+				.setNeutralButton("Re-Check",
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								startCheck();
+							}
+						}).setCancelable(false)
+				.setOnKeyListener(new DialogInterface.OnKeyListener() {
 					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						Intent marketIntent = new Intent(Intent.ACTION_VIEW, Uri
-								.parse("https://play.google.com/store/apps/details?id=" + c.getPackageName()));
-						c.startActivity(marketIntent);
-						// c.finish();
-					}
-				}).setNegativeButton("Exit", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						// finish();
-					}
-				}).setNeutralButton("Re-Check", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						startCheck();
-					}
-				}).setCancelable(false).setOnKeyListener(new DialogInterface.OnKeyListener() {
-					@Override
-					public boolean onKey(DialogInterface dialogInterface, int i, KeyEvent keyEvent) {
+					public boolean onKey(DialogInterface dialogInterface,
+							int i, KeyEvent keyEvent) {
 						Log.i("License", "Key Listener");
 						// finish();
 						return true;
