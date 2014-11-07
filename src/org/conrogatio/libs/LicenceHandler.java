@@ -25,7 +25,7 @@ public class LicenceHandler {
 			Toast.makeText(c, "Your licence is valid", Toast.LENGTH_SHORT)
 					.show();
 		}
-
+		
 		@Override
 		public void applicationError(int reason) {
 			licence = reason;
@@ -33,7 +33,7 @@ public class LicenceHandler {
 			Log.i("License", "Error: " + reason);
 			// showDialog(0);
 		}
-
+		
 		@Override
 		public void dontAllow(int reason) {
 			licence = reason;
@@ -44,7 +44,7 @@ public class LicenceHandler {
 			// showDialog(0);
 		}
 	}
-
+	
 	public int licence;
 	private Handler mHandler;
 	private LicenseChecker mChecker;
@@ -52,7 +52,7 @@ public class LicenceHandler {
 	private boolean licensed = false;
 	private boolean checking = false;
 	private Context c;
-
+	
 	public LicenceHandler(String BASE64_PUBLIC_KEY, byte[] SALT, Context context) {
 		c = context;
 		String deviceId = Secure.getString(c.getContentResolver(),
@@ -64,7 +64,7 @@ public class LicenceHandler {
 				BASE64_PUBLIC_KEY);
 		startCheck();
 	}
-
+	
 	public AlertDialog getDialog(int id) {
 		return new AlertDialog.Builder(c)
 				.setTitle("Application not licensed")
@@ -109,19 +109,19 @@ public class LicenceHandler {
 					}
 				}).create();
 	}
-
+	
 	public int getReason() {
 		return licence;
 	}
-
+	
 	public boolean isChecking() {
 		return checking;
 	}
-
+	
 	public boolean licensed() {
 		return licensed;
 	}
-
+	
 	public void startCheck() {
 		mChecker.checkAccess(mLicenseCheckerCallback);
 		checking = true;

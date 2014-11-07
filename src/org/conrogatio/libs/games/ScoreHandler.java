@@ -16,7 +16,7 @@ public class ScoreHandler {
 	private static final String KEY_LATEST_SCORE = "latestScore";
 	private static final String KEY_LATEST_PLACE = "latestPlace";
 	private static PrefsStorageHandler scorePSH;
-
+	
 	/**
 	 * 
 	 * @param scoreListLength
@@ -39,19 +39,7 @@ public class ScoreHandler {
 		scorePSH = new PrefsStorageHandler(storageLocation, context);
 		getScores();
 	}
-
-	private void getScores() {
-		scorePSH.fetch(KEY_LATEST_NAME, "");
-		scorePSH.fetch(KEY_LATEST_SCORE, 0);
-		scorePSH.fetch(KEY_LATEST_PLACE, 0);
-		for (int i = 0; i < names.length; i++) {
-			names[i] = scorePSH
-					.fetch(KEY_NAMES + Integer.toString(i), names[i]);
-			scores[i] = scorePSH.fetch(KEY_SCORES + Integer.toString(i),
-					scores[i]);
-		}
-	}
-
+	
 	/**
 	 * 
 	 * @param name
@@ -88,25 +76,7 @@ public class ScoreHandler {
 		writeScores();
 		getScores();
 	}
-
-	/**
-	 * 
-	 * @return A String[] of all the stored names sorted by score. The highest
-	 *         score will be in String[0]
-	 */
-	public String[] getNameList() {
-		return names;
-	}
-
-	/**
-	 * 
-	 * @return A sorted int[] of all the stored scores. The highest score will
-	 *         be in int[0]
-	 */
-	public int[] getScoreList() {
-		return scores;
-	}
-
+	
 	/**
 	 * 
 	 * @return String with the last used name
@@ -114,15 +84,7 @@ public class ScoreHandler {
 	public String getLatestName() {
 		return latestName;
 	}
-
-	/**
-	 * 
-	 * @return int with the last achieved score
-	 */
-	public int getLatestScore() {
-		return latestScore;
-	}
-
+	
 	/**
 	 * 
 	 * @return int with the last achieved place in the high score list. If not
@@ -131,17 +93,45 @@ public class ScoreHandler {
 	public int getLatestPlace() {
 		return latestPlace;
 	}
-
-	private void writeScores() {
-		for (int i = 0; i < names.length; i++) {
-			scorePSH.put(KEY_NAMES + Integer.toString(i), names[i]);
-			scorePSH.put(KEY_SCORES + Integer.toString(i), scores[i]);
-		}
-		scorePSH.put(KEY_LATEST_NAME, latestName);
-		scorePSH.put(KEY_LATEST_SCORE, latestScore);
-		scorePSH.put(KEY_LATEST_PLACE, latestPlace);
+	
+	/**
+	 * 
+	 * @return int with the last achieved score
+	 */
+	public int getLatestScore() {
+		return latestScore;
 	}
-
+	
+	/**
+	 * 
+	 * @return A String[] of all the stored names sorted by score. The highest
+	 *         score will be in String[0]
+	 */
+	public String[] getNameList() {
+		return names;
+	}
+	
+	/**
+	 * 
+	 * @return A sorted int[] of all the stored scores. The highest score will
+	 *         be in int[0]
+	 */
+	public int[] getScoreList() {
+		return scores;
+	}
+	
+	private void getScores() {
+		scorePSH.fetch(KEY_LATEST_NAME, "");
+		scorePSH.fetch(KEY_LATEST_SCORE, 0);
+		scorePSH.fetch(KEY_LATEST_PLACE, 0);
+		for (int i = 0; i < names.length; i++) {
+			names[i] = scorePSH
+					.fetch(KEY_NAMES + Integer.toString(i), names[i]);
+			scores[i] = scorePSH.fetch(KEY_SCORES + Integer.toString(i),
+					scores[i]);
+		}
+	}
+	
 	/**
 	 * Use to remove all the stored scores
 	 */
@@ -155,5 +145,15 @@ public class ScoreHandler {
 		scorePSH.put(KEY_LATEST_NAME, "none");
 		scorePSH.put(KEY_LATEST_SCORE, 0);
 		scorePSH.put(KEY_LATEST_PLACE, "none");
+	}
+	
+	private void writeScores() {
+		for (int i = 0; i < names.length; i++) {
+			scorePSH.put(KEY_NAMES + Integer.toString(i), names[i]);
+			scorePSH.put(KEY_SCORES + Integer.toString(i), scores[i]);
+		}
+		scorePSH.put(KEY_LATEST_NAME, latestName);
+		scorePSH.put(KEY_LATEST_SCORE, latestScore);
+		scorePSH.put(KEY_LATEST_PLACE, latestPlace);
 	}
 }

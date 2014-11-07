@@ -42,20 +42,12 @@ import android.util.Base64;
 public class SecurePrefsStorageHandler {
 	public static class SecurePreferencesException extends RuntimeException {
 		private static final long serialVersionUID = 3051912281127821578L;
-
+		
 		public SecurePreferencesException(Throwable e) {
 			super(e);
 		}
 	}
-
-	private static final String TRANSFORMATION = "AES/CBC/PKCS5Padding";
-	private static final String KEY_TRANSFORMATION = "AES/ECB/PKCS5Padding";
-	private static final String SECRET_KEY_HASH_TRANSFORMATION = "SHA-256";
-	private static final String CHARSET = "UTF-8";
-	private static final String STRING_TRUE = "true";
-	private static final String STRING_FALSE = "false";
-	private static String deviceId;
-
+	
 	private static byte[] convert(Cipher cipher, byte[] bs)
 			throws SecurePreferencesException {
 		try {
@@ -64,7 +56,15 @@ public class SecurePrefsStorageHandler {
 			throw new SecurePreferencesException(e);
 		}
 	}
-
+	private static final String TRANSFORMATION = "AES/CBC/PKCS5Padding";
+	private static final String KEY_TRANSFORMATION = "AES/ECB/PKCS5Padding";
+	private static final String SECRET_KEY_HASH_TRANSFORMATION = "SHA-256";
+	private static final String CHARSET = "UTF-8";
+	private static final String STRING_TRUE = "true";
+	private static final String STRING_FALSE = "false";
+	
+	private static String deviceId;
+	
 	// Settings and helpers
 	private String location;
 	private Context c;
@@ -72,7 +72,7 @@ public class SecurePrefsStorageHandler {
 	private Cipher writer = null;
 	private Cipher reader = null;
 	private Cipher keyWriter = null;
-
+	
 	/**
 	 * This will initialize an instance of the SecurePreferences class
 	 * 
@@ -101,16 +101,49 @@ public class SecurePrefsStorageHandler {
 		}
 		update();
 	}
-
+	
 	public void clear() {
 		prefs.edit().clear().commit();
 	}
-
+	
 	// Check
 	public boolean containsKey(String key) {
 		return prefs.contains(toKey(key));
 	}
-
+	
+	protected byte[] createKeyBytes(String key)
+			throws UnsupportedEncodingException, NoSuchAlgorithmException {
+		MessageDigest md = MessageDigest
+				.getInstance(SECRET_KEY_HASH_TRANSFORMATION);
+		md.reset();
+		byte[] keyBytes = md.digest(key.getBytes(CHARSET));
+		return keyBytes;
+	}
+	
+	protected String decrypt(String securedEncodedValue) {
+		byte[] securedValue = Base64
+				.decode(securedEncodedValue, Base64.NO_WRAP);
+		byte[] value = convert(reader, securedValue);
+		try {
+			return new String(value, CHARSET);
+		} catch (UnsupportedEncodingException e) {
+			throw new SecurePreferencesException(e);
+		}
+	}
+	
+	protected String encrypt(String value, Cipher writer)
+			throws SecurePreferencesException {
+		byte[] secureValue;
+		try {
+			secureValue = convert(writer, value.getBytes(CHARSET));
+		} catch (UnsupportedEncodingException e) {
+			throw new SecurePreferencesException(e);
+		}
+		String secureValueEncoded = Base64.encodeToString(secureValue,
+				Base64.NO_WRAP);
+		return secureValueEncoded;
+	}
+	
 	// Fetch
 	public boolean fetch(String key, boolean defValue)
 			throws SecurePreferencesException {
@@ -125,7 +158,7 @@ public class SecurePrefsStorageHandler {
 		}
 		return defValue;
 	}
-
+	
 	public float fetch(String key, float defValue)
 			throws SecurePreferencesException {
 		key = toKey(key);
@@ -134,7 +167,7 @@ public class SecurePrefsStorageHandler {
 		}
 		return defValue;
 	}
-
+	
 	public int fetch(String key, int defValue)
 			throws SecurePreferencesException {
 		key = toKey(key);
@@ -143,7 +176,7 @@ public class SecurePrefsStorageHandler {
 		}
 		return defValue;
 	}
-
+	
 	public String fetch(String key, String defValue)
 			throws SecurePreferencesException {
 		key = toKey(key);
@@ -152,91 +185,20 @@ public class SecurePrefsStorageHandler {
 		}
 		return defValue;
 	}
-
-	// Put
-	public void put(String key, boolean value) {
-		prefs.edit().putString(toKey(key), toValue(Boolean.toString(value)))
-				.commit();
-	}
-
-	public void put(String key, float value) {
-		prefs.edit().putString(toKey(key), toValue(Float.toString(value)))
-				.commit();
-	}
-
-	public void put(String key, int value) {
-		prefs.edit().putString(toKey(key), toValue(Integer.toString(value)))
-				.commit();
-	}
-
-	public void put(String key, String value) {
-		prefs.edit().putString(toKey(key), toValue(value)).commit();
-	}
-
-	// Remove
-	public void remove(String key) {
-		prefs.edit().remove(toKey(key)).commit();
-	}
-
-	// Update local
-	public void update() {
-		prefs = c.getSharedPreferences(location, Context.MODE_PRIVATE);
-	}
-
-	private String toKey(String key) throws SecurePreferencesException {
-		return encrypt(key + deviceId, keyWriter);
-	}
-
-	private String toValue(String value) throws SecurePreferencesException {
-		return encrypt(value, writer);
-	}
-
-	protected byte[] createKeyBytes(String key)
-			throws UnsupportedEncodingException, NoSuchAlgorithmException {
-		MessageDigest md = MessageDigest
-				.getInstance(SECRET_KEY_HASH_TRANSFORMATION);
-		md.reset();
-		byte[] keyBytes = md.digest(key.getBytes(CHARSET));
-		return keyBytes;
-	}
-
-	protected String decrypt(String securedEncodedValue) {
-		byte[] securedValue = Base64
-				.decode(securedEncodedValue, Base64.NO_WRAP);
-		byte[] value = convert(reader, securedValue);
-		try {
-			return new String(value, CHARSET);
-		} catch (UnsupportedEncodingException e) {
-			throw new SecurePreferencesException(e);
-		}
-	}
-
-	protected String encrypt(String value, Cipher writer)
-			throws SecurePreferencesException {
-		byte[] secureValue;
-		try {
-			secureValue = convert(writer, value.getBytes(CHARSET));
-		} catch (UnsupportedEncodingException e) {
-			throw new SecurePreferencesException(e);
-		}
-		String secureValueEncoded = Base64.encodeToString(secureValue,
-				Base64.NO_WRAP);
-		return secureValueEncoded;
-	}
-
+	
 	protected IvParameterSpec getIv() {
 		byte[] iv = new byte[writer.getBlockSize()];
 		System.arraycopy("fldsjfodasjifudslfjdsaofshaufihadsf".getBytes(), 0,
 				iv, 0, writer.getBlockSize());
 		return new IvParameterSpec(iv);
 	}
-
+	
 	protected SecretKeySpec getSecretKey(String key)
 			throws UnsupportedEncodingException, NoSuchAlgorithmException {
 		byte[] keyBytes = createKeyBytes(key);
 		return new SecretKeySpec(keyBytes, TRANSFORMATION);
 	}
-
+	
 	// Encryption
 	protected void initCiphers(String secureKey)
 			throws UnsupportedEncodingException, NoSuchAlgorithmException,
@@ -246,5 +208,43 @@ public class SecurePrefsStorageHandler {
 		writer.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
 		reader.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
 		keyWriter.init(Cipher.ENCRYPT_MODE, secretKey);
+	}
+	
+	// Put
+	public void put(String key, boolean value) {
+		prefs.edit().putString(toKey(key), toValue(Boolean.toString(value)))
+				.commit();
+	}
+	
+	public void put(String key, float value) {
+		prefs.edit().putString(toKey(key), toValue(Float.toString(value)))
+				.commit();
+	}
+	
+	public void put(String key, int value) {
+		prefs.edit().putString(toKey(key), toValue(Integer.toString(value)))
+				.commit();
+	}
+	
+	public void put(String key, String value) {
+		prefs.edit().putString(toKey(key), toValue(value)).commit();
+	}
+	
+	// Remove
+	public void remove(String key) {
+		prefs.edit().remove(toKey(key)).commit();
+	}
+	
+	private String toKey(String key) throws SecurePreferencesException {
+		return encrypt(key + deviceId, keyWriter);
+	}
+	
+	private String toValue(String value) throws SecurePreferencesException {
+		return encrypt(value, writer);
+	}
+	
+	// Update local
+	public void update() {
+		prefs = c.getSharedPreferences(location, Context.MODE_PRIVATE);
 	}
 }
