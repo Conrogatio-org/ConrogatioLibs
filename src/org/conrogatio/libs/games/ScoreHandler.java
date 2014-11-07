@@ -1,4 +1,6 @@
-package org.conrogatio.libs;
+package org.conrogatio.libs.games;
+
+import org.conrogatio.libs.PrefsStorageHandler;
 
 import android.content.Context;
 
