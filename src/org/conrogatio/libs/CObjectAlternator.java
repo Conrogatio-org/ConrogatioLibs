@@ -8,12 +8,16 @@ public class CObjectAlternator {
 	private static ArrayList<Object> o;
 	private int i = -1;
 	
+	public CObjectAlternator(ArrayList<Object> objects) {
+		o = objects;
+	}
+	
 	private static int randInt() {
 		return rand.nextInt(o.size());
 	}
 	
-	public CObjectAlternator(ArrayList<Object> objects) {
-		o = objects;
+	public CObjectAlternator() {
+		o = new ArrayList<Object>();
 	}
 	
 	public Object getNextObject() {
