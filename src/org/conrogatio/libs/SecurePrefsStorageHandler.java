@@ -1,6 +1,7 @@
 package org.conrogatio.libs;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -48,23 +49,21 @@ public class SecurePrefsStorageHandler {
 		}
 	}
 	
-	private static byte[] convert(Cipher cipher, byte[] bs)
-			throws SecurePreferencesException {
+	private static byte[] convert(Cipher cipher, byte[] bs) throws SecurePreferencesException {
 		try {
 			return cipher.doFinal(bs);
 		} catch (Exception e) {
 			throw new SecurePreferencesException(e);
 		}
 	}
+	
 	private static final String TRANSFORMATION = "AES/CBC/PKCS5Padding";
 	private static final String KEY_TRANSFORMATION = "AES/ECB/PKCS5Padding";
 	private static final String SECRET_KEY_HASH_TRANSFORMATION = "SHA-256";
 	private static final String CHARSET = "UTF-8";
 	private static final String STRING_TRUE = "true";
 	private static final String STRING_FALSE = "false";
-	
 	private static String deviceId;
-	
 	// Settings and helpers
 	private String location;
 	private Context c;
@@ -84,8 +83,7 @@ public class SecurePrefsStorageHandler {
 	 * @param context
 	 *            your current context.
 	 */
-	public SecurePrefsStorageHandler(String storageLocation, String salt,
-			Context context) throws SecurePreferencesException {
+	public SecurePrefsStorageHandler(String storageLocation, String salt, Context context) throws SecurePreferencesException {
 		c = context;
 		deviceId = Secure.getString(c.getContentResolver(), Secure.ANDROID_ID);
 		location = storageLocation + deviceId;
@@ -102,8 +100,8 @@ public class SecurePrefsStorageHandler {
 		update();
 	}
 	
-	public void clear() {
-		prefs.edit().clear().commit();
+	public boolean clear() {
+		return prefs.edit().clear().commit();
 	}
 	
 	// Check
@@ -111,18 +109,15 @@ public class SecurePrefsStorageHandler {
 		return prefs.contains(toKey(key));
 	}
 	
-	protected byte[] createKeyBytes(String key)
-			throws UnsupportedEncodingException, NoSuchAlgorithmException {
-		MessageDigest md = MessageDigest
-				.getInstance(SECRET_KEY_HASH_TRANSFORMATION);
+	protected byte[] createKeyBytes(String key) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+		MessageDigest md = MessageDigest.getInstance(SECRET_KEY_HASH_TRANSFORMATION);
 		md.reset();
 		byte[] keyBytes = md.digest(key.getBytes(CHARSET));
 		return keyBytes;
 	}
 	
 	protected String decrypt(String securedEncodedValue) {
-		byte[] securedValue = Base64
-				.decode(securedEncodedValue, Base64.NO_WRAP);
+		byte[] securedValue = Base64.decode(securedEncodedValue, Base64.NO_WRAP);
 		byte[] value = convert(reader, securedValue);
 		try {
 			return new String(value, CHARSET);
@@ -131,22 +126,19 @@ public class SecurePrefsStorageHandler {
 		}
 	}
 	
-	protected String encrypt(String value, Cipher writer)
-			throws SecurePreferencesException {
+	protected String encrypt(String value, Cipher writer) throws SecurePreferencesException {
 		byte[] secureValue;
 		try {
 			secureValue = convert(writer, value.getBytes(CHARSET));
 		} catch (UnsupportedEncodingException e) {
 			throw new SecurePreferencesException(e);
 		}
-		String secureValueEncoded = Base64.encodeToString(secureValue,
-				Base64.NO_WRAP);
+		String secureValueEncoded = Base64.encodeToString(secureValue, Base64.NO_WRAP);
 		return secureValueEncoded;
 	}
 	
 	// Fetch
-	public boolean fetch(String key, boolean defValue)
-			throws SecurePreferencesException {
+	public boolean fetchBoolean(String key, boolean defValue) throws SecurePreferencesException {
 		key = toKey(key);
 		if (prefs.contains(key)) {
 			String stringBoolean = decrypt(prefs.getString(key, ""));
@@ -159,8 +151,7 @@ public class SecurePrefsStorageHandler {
 		return defValue;
 	}
 	
-	public float fetch(String key, float defValue)
-			throws SecurePreferencesException {
+	public float fetchFloat(String key, float defValue) throws SecurePreferencesException {
 		key = toKey(key);
 		if (prefs.contains(key)) {
 			return Float.parseFloat(decrypt(prefs.getString(key, "")));
@@ -168,8 +159,15 @@ public class SecurePrefsStorageHandler {
 		return defValue;
 	}
 	
-	public int fetch(String key, int defValue)
-			throws SecurePreferencesException {
+	public double fetchDouble(String key, double defValue) throws SecurePreferencesException {
+		key = toKey(key);
+		if (prefs.contains(key)) {
+			return Double.parseDouble(decrypt(prefs.getString(key, "")));
+		}
+		return defValue;
+	}
+	
+	public int fetchInt(String key, int defValue) throws SecurePreferencesException {
 		key = toKey(key);
 		if (prefs.contains(key)) {
 			return Integer.parseInt(decrypt(prefs.getString(key, "")));
@@ -177,8 +175,15 @@ public class SecurePrefsStorageHandler {
 		return defValue;
 	}
 	
-	public String fetch(String key, String defValue)
-			throws SecurePreferencesException {
+	public long fetchLong(String key, long defValue) throws SecurePreferencesException {
+		key = toKey(key);
+		if (prefs.contains(key)) {
+			return Long.parseLong(decrypt(prefs.getString(key, "")));
+		}
+		return defValue;
+	}
+	
+	public String fetchString(String key, String defValue) throws SecurePreferencesException {
 		key = toKey(key);
 		if (prefs.contains(key)) {
 			return decrypt(prefs.getString(key, ""));
@@ -186,22 +191,27 @@ public class SecurePrefsStorageHandler {
 		return defValue;
 	}
 	
+	public BigDecimal fetchBigDecimal(String key, BigDecimal defValue) throws SecurePreferencesException {
+		key = toKey(key);
+		if (prefs.contains(key)) {
+			return new BigDecimal(decrypt(prefs.getString(key, "")));
+		}
+		return defValue;
+	}
+	
 	protected IvParameterSpec getIv() {
 		byte[] iv = new byte[writer.getBlockSize()];
-		System.arraycopy("fldsjfodasjifudslfjdsaofshaufihadsf".getBytes(), 0,
-				iv, 0, writer.getBlockSize());
+		System.arraycopy("fldsjfodasjifudslfjdsaofshaufihadsf".getBytes(), 0, iv, 0, writer.getBlockSize());
 		return new IvParameterSpec(iv);
 	}
 	
-	protected SecretKeySpec getSecretKey(String key)
-			throws UnsupportedEncodingException, NoSuchAlgorithmException {
+	protected SecretKeySpec getSecretKey(String key) throws UnsupportedEncodingException, NoSuchAlgorithmException {
 		byte[] keyBytes = createKeyBytes(key);
 		return new SecretKeySpec(keyBytes, TRANSFORMATION);
 	}
 	
 	// Encryption
-	protected void initCiphers(String secureKey)
-			throws UnsupportedEncodingException, NoSuchAlgorithmException,
+	protected void initCiphers(String secureKey) throws UnsupportedEncodingException, NoSuchAlgorithmException,
 			InvalidKeyException, InvalidAlgorithmParameterException {
 		IvParameterSpec ivSpec = getIv();
 		SecretKeySpec secretKey = getSecretKey(secureKey);
@@ -211,28 +221,37 @@ public class SecurePrefsStorageHandler {
 	}
 	
 	// Put
-	public void put(String key, boolean value) {
-		prefs.edit().putString(toKey(key), toValue(Boolean.toString(value)))
-				.commit();
+	public boolean putBoolean(String key, boolean value) {
+		return prefs.edit().putString(toKey(key), toValue(Boolean.toString(value))).commit();
 	}
 	
-	public void put(String key, float value) {
-		prefs.edit().putString(toKey(key), toValue(Float.toString(value)))
-				.commit();
+	public boolean putFloat(String key, float value) {
+		return prefs.edit().putString(toKey(key), toValue(Float.toString(value))).commit();
 	}
 	
-	public void put(String key, int value) {
-		prefs.edit().putString(toKey(key), toValue(Integer.toString(value)))
-				.commit();
+	public boolean putDouble(String key, double value) {
+		return prefs.edit().putString(toKey(key), toValue(Double.toString(value))).commit();
 	}
 	
-	public void put(String key, String value) {
-		prefs.edit().putString(toKey(key), toValue(value)).commit();
+	public boolean putInt(String key, int value) {
+		return prefs.edit().putString(toKey(key), toValue(Integer.toString(value))).commit();
+	}
+	
+	public boolean putLong(String key, long value) {
+		return prefs.edit().putString(toKey(key), toValue(Long.toString(value))).commit();
+	}
+	
+	public boolean putString(String key, String value) {
+		return prefs.edit().putString(toKey(key), toValue(value)).commit();
+	}
+	
+	public boolean putBigDecimal(String key, BigDecimal value) {
+		return prefs.edit().putString(toKey(key), toValue(value.toString())).commit();
 	}
 	
 	// Remove
-	public void remove(String key) {
-		prefs.edit().remove(toKey(key)).commit();
+	public boolean remove(String key) {
+		return prefs.edit().remove(toKey(key)).commit();
 	}
 	
 	private String toKey(String key) throws SecurePreferencesException {
